@@ -99,7 +99,7 @@ public non-sealed abstract class BuildableAssembly extends Assembly {
         if (existing == null) { // assembly has not been used in a build process before
             AssemblySetup assembly = AssemblySetup.newAssembly(installer, this);
             PackedBuildProcess p = PackedBuildProcess.get();
-            p.push(assembly);
+            AssemblySetup previous = p.push(assembly);
             try {
                 AssemblyConfiguration ac = configuration = new AssemblyConfiguration(assembly);
 
@@ -114,12 +114,12 @@ public non-sealed abstract class BuildableAssembly extends Assembly {
                     assembly.model.hooks.forEachReversed(AssemblyBuildHook.class, h -> h.afterBuild(ac));
                 } finally {
                     // Sets #configuration to a marker object that indicates the assembly has been used
-                    existing = AssemblyConfiguration.USED;
+                    configuration = AssemblyConfiguration.USED;
                 }
 
                 assembly.postBuild();
             } finally {
-                p.pop(assembly);
+                p.pop(previous);
             }
             return assembly;
         } else if (existing == AssemblyConfiguration.USED) {

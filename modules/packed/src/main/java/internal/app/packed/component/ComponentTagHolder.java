@@ -82,7 +82,7 @@ public final class ComponentTagHolder {
     public static Set<String> copyAndAdd(Set<String> set, String... tags) {
         Set<String> result = set;
         for (String tag : tags) {
-            set = copyAndAdd(result, tag);
+            result = copyAndAdd(result, tag);
         }
         return result;
     }

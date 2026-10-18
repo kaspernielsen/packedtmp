@@ -64,8 +64,8 @@ public abstract sealed class PackedOp<R> implements Op<R> permits IntermediateOp
         int argumentsLength = 1 + additionalArguments.length;
         int newParameterCount = type.parameterCount() - argumentsLength;
 
-        if (newParameterCount < 0) {
-            throw new IllegalArgumentException("Cannot specify more than " + (argumentsLength - position) + " arguments for position = " + position
+        if (position + argumentsLength > type.parameterCount()) {
+            throw new IllegalArgumentException("Cannot specify more than " + (type.parameterCount() - position) + " arguments for position = " + position
                     + ", but arguments array was size " + argumentsLength);
         }
 

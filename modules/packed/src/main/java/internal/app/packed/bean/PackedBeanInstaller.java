@@ -43,7 +43,8 @@ import internal.app.packed.operation.PackedOperationTemplate;
 /** Implementation of {@link BeanTemplate.Installer}. */
 public final class PackedBeanInstaller extends AbstractComponentInstaller<BeanSetup, PackedBeanInstaller> implements BeanInstaller {
 
-    private final HashMap<Class<? extends Context<?>>, ContextModel> contexts = new HashMap<>();
+    /** Contexts that have been explicitly added via {@link #addContext(Class)}, in addition to those from the template. */
+    final HashMap<Class<? extends Context<?>>, ContextModel> contexts = new HashMap<>();
 
     /** The extension that is installing the bean. */
     final ExtensionSetup installledByExtension;

@@ -17,6 +17,7 @@ package internal.app.packed.lifecycle.lifetime;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,7 @@ import internal.app.packed.lifecycle.LifecycleOperationHandle.AbstractInitializi
 import internal.app.packed.lifecycle.LifecycleOperationHandle.StartOperationHandle;
 import internal.app.packed.lifecycle.LifecycleOperationHandle.StopOperationHandle;
 import internal.app.packed.lifecycle.lifetime.entrypoint.EntryPointManager;
+import internal.app.packed.service.CircularServiceDependencyChecker;
 import internal.app.packed.util.AbstractTreeNode;
 import internal.app.packed.util.ThrowableUtil;
 import internal.app.packed.util.accesshelper.BeanLifetimeAccessHandler;
@@ -56,6 +58,9 @@ public final class ContainerLifetimeSetup extends AbstractTreeNode<ContainerLife
     public final ContainerSetup container;
 
     private final LinkedHashSet<BeanSetup> dependencyOrderedBeans = new LinkedHashSet<>();
+
+    /** Beans whose dependencies are currently being ordered, used to guard against circular dependencies. */
+    private final HashSet<BeanSetup> beansBeingOrdered = new HashSet<>();
 
     /** An object that is shared between all entry point extensions in the same application. */
     public final EntryPointManager entryPoints = new EntryPointManager();
@@ -129,6 +134,9 @@ public final class ContainerLifetimeSetup extends AbstractTreeNode<ContainerLife
     }
 
     public void orderDependencies() {
+        // Fail with a proper error message before attempting to order beans with circular dependencies
+        CircularServiceDependencyChecker.dependencyCyclesFind(container);
+
         // We need to make sure that extensions are initialized first in order
         // We do a stable sort, where BaseExtension are first,
         // And application is last.
@@ -154,6 +162,9 @@ public final class ContainerLifetimeSetup extends AbstractTreeNode<ContainerLife
     }
 
     private void orderDependenciesBeans(BeanSetup bean) {
+        if (dependencyOrderedBeans.contains(bean) || !beansBeingOrdered.add(bean)) {
+            return; // already ordered, or currently being ordered (circular dependency)
+        }
         Set<BeanSetup> dependsOn = bean.dependsOn();
         for (BeanSetup b : dependsOn) {
             if (b != bean) { // bug, don't think it should be here
@@ -175,7 +186,7 @@ public final class ContainerLifetimeSetup extends AbstractTreeNode<ContainerLife
             for (InvokableLifecycleOperationHandle<LifecycleOperationHandle> h : lop) {
                 switch (h.lifecycleKind()) {
                 case FACTORY, INJECT, INITIALIZE_PRE_ORDER -> initializationPre.add(new IndexedOperationHandle(h, bean.lifetimeStoreIndex));
-                case INITIALIZE_POST_ORDER -> startersPost.addFirst((InvokableLifecycleOperationHandle) h);
+                case INITIALIZE_POST_ORDER -> initializationPost.addFirst((InvokableLifecycleOperationHandle) h);
                 case START_PRE_ORDER -> startersPre.add((InvokableLifecycleOperationHandle) h);
                 case START_POST_ORDER -> startersPost.addFirst((InvokableLifecycleOperationHandle) h);
                 case STOP_PRE_ORDER -> stoppersPre.add((InvokableLifecycleOperationHandle) h);

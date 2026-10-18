@@ -88,8 +88,14 @@ public final class PackedBuildProcess implements BuildProcess {
         return goal;
     }
 
-    public void pop(AssemblySetup assembly) {
-        this.active = assembly;
+    /**
+     * Restores the previously active assembly.
+     *
+     * @param previous
+     *            the assembly that was active before the matching {@link #push(AssemblySetup)}, may be null
+     */
+    public void pop(@Nullable AssemblySetup previous) {
+        this.active = previous;
     }
 
     /** {@inheritDoc} */

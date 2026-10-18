@@ -41,6 +41,7 @@ public final class CircularServiceDependencyChecker {
         for (NamespaceServiceProviderHandle node : container.servicesMain().providers) {
             if (!node.hasBeenCheckForDependencyCycles) { // only process those nodes that have not been visited yet
                 detectCycle(node, stack, dependencies);
+                node.hasBeenCheckForDependencyCycles = true;
             }
         }
 
@@ -98,6 +99,7 @@ public final class CircularServiceDependencyChecker {
                     throw new CircularDependencyException(errorMsg);
                 }
                 detectCycle(next, stack, dependencies);
+                next.hasBeenCheckForDependencyCycles = true;
                 dependencies.pop();
             }
 

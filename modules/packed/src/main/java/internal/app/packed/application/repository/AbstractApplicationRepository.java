@@ -18,7 +18,6 @@ package internal.app.packed.application.repository;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -89,7 +88,9 @@ public sealed abstract class AbstractApplicationRepository<I, H extends Applicat
         ApplicationSetup setup = pai.toSetup();
 
         PackedInstalledApplication<I, H> pal = new PackedInstalledApplication<>(this instanceof ManagedApplicationRepository, (H) setup.handle());
-        applications.put(UUID.randomUUID().toString(), pal);
+        if (applications.putIfAbsent(pai.name, pal) != null) {
+            throw new IllegalArgumentException("An application with the name '" + pai.name + "' is already installed in the repository");
+        }
         return pal;
     }
 

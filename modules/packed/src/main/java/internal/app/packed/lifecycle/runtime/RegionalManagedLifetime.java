@@ -106,37 +106,38 @@ public final class RegionalManagedLifetime implements ManagedApplicationRuntime 
         return state;
     }
 
-    private void doInitialize() {
+    /**
+     * Updates the run state under the lock and wakes up anyone waiting in {@link #await(RunState)}.
+     *
+     * @param newState
+     *            the new run state
+     */
+    private void setState(RunState newState) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            assert (state == RunState.UNINITIALIZED);
-            this.state = RunState.INITIALIZING;
+            this.state = newState;
+            lockAwaitState.signalAll();
         } finally {
             lock.unlock();
         }
+    }
+
+    private void doInitialize() {
+        assert (state == RunState.UNINITIALIZED);
+        setState(RunState.INITIALIZING);
 
         try {
             runner.container.lifetime.initialize(runner.pool());
         } catch (Throwable t) {
             this.throwable = t;
-            lock.lock();
-            try {
-                this.state = RunState.TERMINATED;
-            } finally {
-                lock.unlock();
-            }
+            setState(RunState.TERMINATED);
             // We never run any stop methods when an initialization method fails
             throw new UnhandledApplicationException(state, null, t);
             // throw t;
         }
 
-        lock.lock();
-        try {
-            this.state = RunState.INITIALIZED;
-        } finally {
-            lock.unlock();
-        }
+        setState(RunState.INITIALIZED);
     }
 
     /** {@inheritDoc} */
@@ -186,26 +187,15 @@ public final class RegionalManagedLifetime implements ManagedApplicationRuntime 
     }
 
     void shutdown() {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try {
-            this.state = RunState.STOPPING;
-        } finally {
-            lock.unlock();
-        }
+        setState(RunState.STOPPING);
         try {
             runner.shutdown();
         } catch (Throwable t) {
-            this.state = RunState.TERMINATED;
             this.throwable = t;
+            setState(RunState.TERMINATED);
             throw t;
         }
-        lock.lock();
-        try {
-            this.state = RunState.TERMINATED;
-        } finally {
-            lock.unlock();
-        }
+        setState(RunState.TERMINATED);
     }
 
     /** {@inheritDoc} */
@@ -219,6 +209,7 @@ public final class RegionalManagedLifetime implements ManagedApplicationRuntime 
                     throw new IllegalStateException("Cannot call this method now");
                 } else if (state == RunState.INITIALIZED) {
                     this.state = RunState.STARTING;
+                    lockAwaitState.signalAll();
                     break;
                 } else if (state == RunState.STARTING) {
                     try {
@@ -243,21 +234,11 @@ public final class RegionalManagedLifetime implements ManagedApplicationRuntime 
             runner.start();
         } catch (Throwable t) {
             this.throwable = t;
-            lock.lock();
-            try {
-                this.state = RunState.TERMINATED;
-            } finally {
-                lock.unlock();
-            }
+            setState(RunState.TERMINATED);
             throw t;
         }
 
-        lock.lock();
-        try {
-            this.state = RunState.RUNNING;
-        } finally {
-            lock.unlock();
-        }
+        setState(RunState.RUNNING);
 
         // Boer vel spawnes????
         OldEntryPointSetup ep = runner.container.lifetime.entryPoints.entryPoint;
@@ -276,12 +257,7 @@ public final class RegionalManagedLifetime implements ManagedApplicationRuntime 
 
     void startFailed(Throwable t) {
         this.throwable = t;
-        lock.lock();
-        try {
-            this.state = RunState.STOPPING;
-        } finally {
-            lock.unlock();
-        }
+        setState(RunState.STOPPING);
     }
 
     /** {@inheritDoc} */

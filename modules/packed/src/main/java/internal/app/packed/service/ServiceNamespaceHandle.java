@@ -74,6 +74,8 @@ public abstract class ServiceNamespaceHandle {
         // bean.install(::newHandle);
         NamespaceServiceProviderHandle newProvider = new NamespaceServiceProviderHandle(key, this, operation, resolution);
         providers.put(key, newProvider);
+        // Register the provider on the bean that provides it, used for dependency cycle detection
+        newProvider.operation().bean.operations.serviceProviders.add(newProvider);
         return newProvider;
     }
 

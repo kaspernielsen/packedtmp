@@ -38,8 +38,7 @@ public sealed interface AnnotationList extends Iterable<Annotation> permits Pack
 
     // If repeatable, invoke once perannotation
     default <T extends Annotation> void ifPresent(Class<T> annotationClass, Consumer<T> consumer) {
-        T t = readRequired(annotationClass);
-        consumer.accept(t);
+        read(annotationClass).ifPresent(consumer);
     }
 
     /** {@return whether or not there are any annotations in the list.} */

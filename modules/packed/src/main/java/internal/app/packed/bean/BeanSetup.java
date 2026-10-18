@@ -152,6 +152,9 @@ public final class BeanSetup implements ContextualizedComponentSetup, BuildLocal
         for (ContextModel t : installer.template.initializationTemplate().contexts) {
             contexts.put(t.contextClass(), new ContextSetup(t, this));
         }
+        for (ContextModel t : installer.contexts.values()) {
+            contexts.putIfAbsent(t.contextClass(), new ContextSetup(t, this));
+        }
     }
 
     public PackedAttachmentOperationHandle attach(Class<? extends Extension<?>> extension, Op<?> op, boolean ifAbsent) {

@@ -104,7 +104,7 @@ public final class BeanOperationsSetup implements Iterable<OperationSetup> {
     public Map<OperationSetup, String> operationNames() {
         Map<OperationSetup, String> m = operationNames;
         // operationNames is only valid as
-        if (m == null || m.size() != operationNames.size()) {
+        if (m == null || m.size() != all.size()) {
             m = operationNames = LazyNamer.calculate(all, OperationSetup::namePrefix);
         }
         return m;
