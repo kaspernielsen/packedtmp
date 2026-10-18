@@ -301,8 +301,8 @@ public final class ContainerSetup extends AbstractNamedTreeNode<ContainerSetup> 
             } else {
                 int counter = 1;
                 while (c.putIfAbsent(n, this) != null) {
-                    n = n + counter++; // maybe store some kind of map<ComponentSetup, LongCounter> in BuildSetup.. for those that want to test
-                                       // adding 1
+                    n = nn + counter++; // maybe store some kind of map<ComponentSetup, LongCounter> in BuildSetup.. for those that want to test
+                                        // adding 1
                     // million of the same component type
                 }
             }
@@ -312,6 +312,12 @@ public final class ContainerSetup extends AbstractNamedTreeNode<ContainerSetup> 
 
     /** Call {@link Extension#onAssemblyClose()}. */
     public void onAssemblyClose(AuthoritySetup<?> as) {
+        // The container handle is only closed once, when the assembly itself is closed.
+        // This method is also invoked once per extension in order to close extension owned beans.
+        if (as == assembly) {
+            ContainerAccessHandler.instance().invokeContainerHandleDoClose(handle());
+        }
+
         for (BeanSetup b : beans) {
             if (b.owner == as) {
                 BeanAccessHandler.instance().invokeBeanHandleDoClose(b.handle(), true);
@@ -320,7 +326,6 @@ public final class ContainerSetup extends AbstractNamedTreeNode<ContainerSetup> 
 
         for (ContainerSetup c : treeChildren.values()) {
             if (assembly == c.assembly) {
-                ContainerAccessHandler.instance().invokeContainerHandleDoClose(c.handle());
                 c.onAssemblyClose(as);
             }
         }

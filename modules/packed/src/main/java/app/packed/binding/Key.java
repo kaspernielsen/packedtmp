@@ -358,7 +358,7 @@ public abstract class Key<T> {
                     newAnnotations[j] = annotations[j];
                 }
                 for (int j = i + 1; j < annotations.length; j++) {
-                    newAnnotations[j] = annotations[j - 1];
+                    newAnnotations[j - 1] = annotations[j];
                 }
                 return new CanonicalizedKey<>(type, new PackedAnnotationList(newAnnotations));
             }

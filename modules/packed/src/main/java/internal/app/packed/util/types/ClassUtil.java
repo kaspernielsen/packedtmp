@@ -32,7 +32,7 @@ public class ClassUtil {
         if (clazzToCheck == clazz) {
             throw f.onError(clazz.getSimpleName() + ".class is not a valid argument to this method.");
         } else if (!clazz.isAssignableFrom(clazzToCheck)) {
-            throw f.onError("The specified type '" + StringFormatter.format(clazz) + "' must extend '" + StringFormatter.format(clazzToCheck) + "'");
+            throw f.onError("The specified type '" + StringFormatter.format(clazzToCheck) + "' must extend '" + StringFormatter.format(clazz) + "'");
         }
         return (Class<T>) clazzToCheck;
     }

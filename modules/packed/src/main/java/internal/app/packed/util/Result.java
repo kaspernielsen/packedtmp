@@ -86,7 +86,7 @@ public final /* value */ class Result<T> {
     @SuppressWarnings("unchecked")
     public <U> Result<U> map(Function<? super T, ? extends U> mapper) {
         Objects.requireNonNull(mapper);
-        if (isFailed()) {
+        if (isCompletedExceptional()) {
             return (Result<U>) this;
         } else {
             return Result.ofSuccess(mapper.apply(t()));

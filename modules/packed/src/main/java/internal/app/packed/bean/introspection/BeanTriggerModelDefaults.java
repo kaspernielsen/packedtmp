@@ -42,7 +42,7 @@ public final class BeanTriggerModelDefaults implements BeanTriggerModel {
                 return null;
             }
 
-            if (type.isAssignableFrom(OnAnnotatedVariable.class)) {
+            if (type.isAnnotationPresent(OnAnnotatedVariable.class)) {
                 throw new InternalExtensionException(type + " cannot both be annotated with " + OnAnnotatedField.class + " and " + OnAnnotatedVariable.class);
             }
 

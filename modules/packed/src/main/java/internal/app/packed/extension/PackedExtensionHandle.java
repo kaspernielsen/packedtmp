@@ -84,7 +84,7 @@ public record PackedExtensionHandle<E extends Extension<E>>(ExtensionSetup exten
                 if (otherExtensionClass == extension.extensionType) {
                     throw new InternalExtensionException(otherExtensionClass.getSimpleName() + " cannot use its own extension point " + extensionPointClass);
                 }
-                throw new InternalExtensionException(getClass().getSimpleName() + " must declare " + StringFormatter.format(otherExtensionClass)
+                throw new InternalExtensionException(extension.extensionType.getSimpleName() + " must declare " + StringFormatter.format(otherExtensionClass)
                         + " as a dependency in order to use " + extensionPointClass);
             }
         }

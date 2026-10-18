@@ -37,6 +37,7 @@ import internal.app.packed.util.types.GenericType;
 import testutil.stubs.Qualifiers;
 import testutil.stubs.Qualifiers.CharQualifier;
 import testutil.stubs.Qualifiers.IntQualifier;
+import testutil.stubs.Qualifiers.StringQualifier;
 
 /** Tests {@link Key}. */
 public class KeyTest {
@@ -60,6 +61,17 @@ public class KeyTest {
     static final Key<String> KEY_STRING = new Key<>() {};
 
     static final Key<Map<? extends String, ?>> TL_MAP = new Key<>() {};
+
+    @Test
+    public void withoutQualifierOfType() {
+        Key<Integer> both = new Key<@CharQualifier('X') @IntQualifier(1) Integer>() {};
+        assertThat(both.qualifiers().size()).isEqualTo(2);
+
+        assertThat(both.withoutQualifierOfType(CharQualifier.class)).isEqualTo(new Key<@IntQualifier(1) Integer>() {});
+        assertThat(both.withoutQualifierOfType(IntQualifier.class)).isEqualTo(new Key<@CharQualifier('X') Integer>() {});
+        assertThat(both.withoutQualifierOfType(StringQualifier.class)).isSameAs(both);
+        assertThat(KEY_INTEGER_X.withoutQualifierOfType(CharQualifier.class)).isEqualTo(KEY_INTEGER);
+    }
 
     @Test
     public void canonicalize() {

@@ -248,9 +248,7 @@ public interface App extends AutoCloseable, ApplicationInterface {
         // @LaunchArgument/@LaunchArg <--- Injectable
 
         @Override
-        default <T> Launcher provide(Key<? super T> key, T value) {
-            return null;
-        }
+        <T> Launcher provide(Key<? super T> key, T value);
 
         /**
          * Runs the application to completion.

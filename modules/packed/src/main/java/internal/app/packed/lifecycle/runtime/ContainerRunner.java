@@ -15,11 +15,16 @@
  */
 package internal.app.packed.lifecycle.runtime;
 
+import java.util.ArrayList;
+
 import app.packed.lifecycle.RunState;
 import org.jspecify.annotations.Nullable;
 import internal.app.packed.application.ApplicationSetup;
 import internal.app.packed.container.ContainerSetup;
 import internal.app.packed.extension.ExtensionContext;
+import internal.app.packed.lifecycle.InvokableLifecycleOperationHandle;
+import internal.app.packed.lifecycle.LifecycleOperationHandle.StartOperationHandle;
+import internal.app.packed.lifecycle.LifecycleOperationHandle.StopOperationHandle;
 
 /**
  *
@@ -55,10 +60,16 @@ public class ContainerRunner {
     }
 
     void shutdown() {
-        new StopRunner(container.lifetime.stoppersPre, pool, runtime).start();
+        // Stop operations that run before dependency order are followed by those that run in dependency order
+        ArrayList<InvokableLifecycleOperationHandle<StopOperationHandle>> stoppers = new ArrayList<>(container.lifetime.stoppersPre);
+        stoppers.addAll(container.lifetime.stoppersPost);
+        new StopRunner(stoppers, pool, runtime).start();
     }
 
     void start() {
-        new StartRunner(container.lifetime.startersPre, pool, runtime).start();
+        // Start operations in dependency order are followed by those that run in reverse order
+        ArrayList<InvokableLifecycleOperationHandle<StartOperationHandle>> starters = new ArrayList<>(container.lifetime.startersPre);
+        starters.addAll(container.lifetime.startersPost);
+        new StartRunner(starters, pool, runtime).start();
     }
 }

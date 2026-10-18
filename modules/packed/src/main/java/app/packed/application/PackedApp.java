@@ -68,6 +68,13 @@ final record PackedApp(@SidehandleBinding(FROM_CONTEXT) ManagedApplicationRuntim
 
         /** {@inheritDoc} */
         @Override
+        public <T> AppImage provide(Key<? super T> key, T value) {
+            image.provide(key, value);
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public void run() {
             image.launch(RunState.TERMINATED);
         }

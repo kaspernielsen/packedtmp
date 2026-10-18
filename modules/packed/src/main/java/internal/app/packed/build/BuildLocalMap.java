@@ -57,7 +57,7 @@ public final class BuildLocalMap {
     }
 
     public boolean isBound(PackedBuildLocal<?, ?> local, Object key) {
-        return locals.contains(new LocalKey(local, key));
+        return locals.containsKey(new LocalKey(local, key));
     }
 
     public <T> @Nullable T orElse(PackedBuildLocal<?, T> local, Object key, T other) {

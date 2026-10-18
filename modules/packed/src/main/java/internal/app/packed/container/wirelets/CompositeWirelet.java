@@ -117,6 +117,7 @@ public final class CompositeWirelet extends FrameworkWirelet {
             for (Wirelet w : wirelets) {
                 if (w instanceof CompositeWirelet list) {
                     copyInto(list.wirelets, tmp, i);
+                    i += list.wirelets.length;
                 } else {
                     tmp[i++] = w;
                 }
@@ -129,7 +130,7 @@ public final class CompositeWirelet extends FrameworkWirelet {
     private static Wirelet nullChecked(Wirelet[] wirelets, int index) {
         Wirelet w = wirelets[index];
         if (w == null) {
-            throw new NullPointerException("Wirelets is null at index " + 0);
+            throw new NullPointerException("Wirelets is null at index " + index);
         }
         return w;
     }

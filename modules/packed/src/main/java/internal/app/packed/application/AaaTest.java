@@ -119,6 +119,13 @@ public class AaaTest extends BaseAssembly {
 
             /** {@inheritDoc} */
             @Override
+            public <T> AppImage provide(app.packed.binding.Key<? super T> key, T value) {
+                image.provide(key, value);
+                return this;
+            }
+
+            /** {@inheritDoc} */
+            @Override
             public void run() {
                 image.launch(RunState.TERMINATED);
             }

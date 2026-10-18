@@ -263,10 +263,9 @@ public non-sealed abstract class Extension<E extends Extension<E>> implements Bu
     @SuppressWarnings("unchecked")
     protected final E lifetimeRoot() {
         ExtensionSetup s = extension;
-        while (s.treeParent != null) {
-            if (s.container.lifetime != s.treeParent.container.lifetime) {
-                s = s.treeParent;
-            }
+        // Walk up as long as the parent container is part of the same lifetime
+        while (s.treeParent != null && s.container.lifetime == s.treeParent.container.lifetime) {
+            s = s.treeParent;
         }
         return (E) s.instance();
     }
